@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SoloTravel AI Companion</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet" />
+
+    <!-- Leaflet (Map) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <div class="app-shell container-fluid overflow-hidden">
+        <div class="row g-0 app-row">
+
+            <!-- SIDEBAR (hidden on small screens) -->
+            <nav class="col-md-2 d-none d-md-flex flex-column sidebar p-3">
+                <div class="brand-logo mb-4 d-flex align-items-center">
+                    <div class="brand-icon d-inline-flex align-items-center justify-content-center me-2">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                    <span>Companion</span>
+                </div>
+
+                <ul class="nav flex-column gap-2 mb-4 main-nav">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#" data-section="dashboard">
+                            <i class="fa-solid fa-house me-2"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="itinerary">
+                            <i class="fa-solid fa-map-location-dot me-2"></i>
+                            <span>My Itinerary</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="explore">
+                            <i class="fa-solid fa-compass me-2"></i>
+                            <span>Explore</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" data-section="community">
+                            <i class="fa-solid fa-users me-2"></i>
+                            <span>Community</span>
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="mt-auto safety-box p-3 rounded-3 text-center">
+                    <h6 class="text-white mb-1">
+                        <i class="fa-solid fa-shield-halved me-1"></i> Safety Status
+                    </h6>
+                    <div class="badge bg-success mb-3 px-3 py-2 rounded-pill">
+                        Safe Zone
+                    </div>
+                    <button class="btn btn-danger w-100 fw-bold pulse-anim" type="button" aria-label="Trigger SOS alert">
+                        SOS / 112
+                    </button>
+                </div>
+            </nav>
+
+            <!-- MAIN CONTENT -->
+            <main class="col-md-7 col-lg-7 p-4 scrollable-main">
+                <!-- MOBILE TOP BAR -->
+                <div class="d-md-none mb-3 mobile-topbar d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="badge bg-primary-subtle text-primary">
+                            <i class="fa-solid fa-paper-plane me-1"></i> Companion
+                        </span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary mobile-scroll-chat">
+                        Chat <i class="fa-solid fa-comment-dots ms-1"></i>
+                    </button>
+                </div>
+
+                <!-- HEADER -->
+                <header class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                    <div>
+                        <h2 class="fw-bold text-dark mb-1">Good Morning, Alex!</h2>
+                        <p class="text-muted mb-0">
+                            Currently near
+                            <span class="text-primary fw-bold current-location-label">
+                                <i class="fa-solid fa-location-dot me-1"></i>
+                                Detecting location
+                            </span>
+                        </p>
+                    </div>
+                    <div class="d-flex align-items-center gap-3">
+                        <button class="btn btn-outline-primary btn-sm d-flex align-items-center gap-2" id="btnLocation" type="button">
+                            <i class="fa-solid fa-location-crosshairs"></i>
+                            Enable Live Location
+                        </button>
+                        <div class="profile-pic">
+                            <img src="https://ui-avatars.com/api/?name=Alex+Traveler&background=random" alt="Profile" class="rounded-circle border profile-img" />
+                        </div>
+                    </div>
+                </header>
+
+                <!-- DASHBOARD SECTION -->
+                <section id="section-dashboard" class="main-section active">
+                    <!-- MOOD SECTION -->
+                    <section class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <h5 class="section-title mb-0">How are you feeling right now?</h5>
+                            <small class="text-muted">Tap a mood and I’ll adapt to you</small>
+                        </div>
+                        <div class="d-flex gap-2 gap-md-3 mt-3 overflow-auto pb-2 mood-strip">
+                            <button class="btn btn-mood active" data-mood="Adventurous">
+                                <i class="fa-solid fa-person-hiking me-2"></i> Adventurous
+                            </button>
+                            <button class="btn btn-mood" data-mood="Relaxed">
+                                <i class="fa-solid fa-mug-hot me-2"></i> Relaxed
+                            </button>
+                            <button class="btn btn-mood" data-mood="Lonely">
+                                <i class="fa-solid fa-face-sad-tear me-2"></i> Lonely
+                            </button>
+                            <button class="btn btn-mood" data-mood="Hungry">
+                                <i class="fa-solid fa-utensils me-2"></i> Hungry
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- MAP + QUICK CARDS -->
+                    <div class="row g-4 mb-4">
+                        <!-- REAL-TIME MAP -->
+                        <div class="col-12">
+                            <div class="card map-card border-0 shadow-sm">
+                                <div class="card-body p-0 position-relative">
+                                    <div id="liveMap" class="map-placeholder">
+                                        <div class="map-loader text-muted">
+                                            <i class="fa-solid fa-spinner fa-spin me-2"></i>
+                                            Waiting for location permission
+                                        </div>
+                                    </div>
+                                    <div class="map-overlay p-3">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <h6 class="mb-0 fw-bold">You are here</h6>
+                                            <span class="badge bg-primary-subtle text-primary small">
+                                                Live location
+                                            </span>
+                                        </div>
+                                        <p class="mb-0 small text-muted map-hint-text">
+                                            Tap “Enable Live Location” to lock onto where you are and get better suggestions.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TODAY'S PLAN -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm p-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="fw-bold mb-0">Today’s Flow</h5>
+                                    <span class="badge bg-primary-subtle text-primary">
+                                        <i class="fa-solid fa-wand-magic-sparkles me-1"></i> Auto-adjusting
+                                    </span>
+                                </div>
+                                <p class="small text-muted mb-2">
+                                    I adapt this plan as you move and as your mood changes.
+                                </p>
+                                <div class="timeline">
+                                    <div class="timeline-item">
+                                        <span class="time">Morning</span>
+                                        <p class="mb-0">Explore a nearby landmark</p>
+                                        <small class="text-muted">Safe and solo-friendly</small>
+                                    </div>
+                                    <div class="timeline-item active">
+                                        <span class="time">Afternoon</span>
+                                        <p class="mb-0">Find a cozy café to recharge</p>
+                                        <small class="text-muted">With Wi-Fi and calm vibes</small>
+                                    </div>
+                                    <div class="timeline-item">
+                                        <span class="time">Evening</span>
+                                        <p class="mb-0">Join a group event or chill spot</p>
+                                        <small class="text-muted">Based on your mood</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LIVE RECOMMENDATIONS SUMMARY -->
+                        <div class="col-md-6">
+                            <div class="card h-100 border-0 shadow-sm p-3 rec-card">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <h5 class="fw-bold mb-0">Smart Suggestions</h5>
+                                    <span class="badge bg-success-subtle text-success">
+                                        Mood + Location aware
+                                    </span>
+                                </div>
+                                <p class="small text-muted mb-3">
+                                    I combine your mood with your live position to keep you safe, entertained and not alone.
+                                </p>
+                                <ul class="small mb-0 ps-3 suggestion-list">
+                                    <li class="suggestion-item">
+                                        Quick coffee or snack around you when you feel low on energy.
+                                    </li>
+                                    <li class="suggestion-item">
+                                        Gentle, well-lit walking routes when you want fresh air.
+                                    </li>
+                                    <li class="suggestion-item">
+                                        Social spots and meetups when you feel lonely.
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ITINERARY SECTION -->
+                <section id="section-itinerary" class="main-section">
+                    <h4 class="fw-bold mb-3">My Itinerary</h4>
+                    <p class="text-muted mb-4">
+                        This is a flexible plan. I will never force you to follow it, only guide you safely.
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm p-3">
+                                <h6 class="fw-bold mb-1">Day 1 · Arrival & Getting Oriented</h6>
+                                <small class="text-muted d-block mb-2">Soft and slow start</small>
+                                <ul class="small mb-0 ps-3">
+                                    <li>Find your stay safely</li>
+                                    <li>Short walk near your area</li>
+                                    <li>Check nearest store and café</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm p-3">
+                                <h6 class="fw-bold mb-1">Day 2 · Explore & Connect</h6>
+                                <small class="text-muted d-block mb-2">More confident day</small>
+                                <ul class="small mb-0 ps-3">
+                                    <li>Visit key attraction nearby</li>
+                                    <li>Find a good lunch spot</li>
+                                    <li>Look for safe social events</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- EXPLORE SECTION -->
+                <section id="section-explore" class="main-section">
+                    <h4 class="fw-bold mb-3">Explore Around You</h4>
+                    <p class="text-muted mb-4">
+                        These are sample categories. In a full version, these would be powered by real APIs.
+                    </p>
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm h-100 p-3">
+                                <span class="badge bg-primary-subtle text-primary mb-2">
+                                    Calm Spots
+                                </span>
+                                <h6 class="fw-bold mb-1">Quiet Corners</h6>
+                                <small class="text-muted d-block mb-2">Perfect when you feel relaxed</small>
+                                <p class="small mb-2">
+                                    Parks, libraries and cafés where you can just breathe and exist.
+                                </p>
+                                <button class="btn btn-outline-primary btn-sm rounded-pill mt-auto">
+                                    Suggest near me
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm h-100 p-3">
+                                <span class="badge bg-success-subtle text-success mb-2">
+                                    Safe Walks
+                                </span>
+                                <h6 class="fw-bold mb-1">Trusted Routes</h6>
+                                <small class="text-muted d-block mb-2">Well-lit and active</small>
+                                <p class="small mb-2">
+                                    Routes with people around and better visibility, ideal for solo travel.
+                                </p>
+                                <button class="btn btn-outline-success btn-sm rounded-pill mt-auto">
+                                    Show simple route
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card border-0 shadow-sm h-100 p-3">
+                                <span class="badge bg-warning-subtle text-warning mb-2">
+                                    Social Places
+                                </span>
+                                <h6 class="fw-bold mb-1">Meet People</h6>
+                                <small class="text-muted d-block mb-2">When loneliness hits</small>
+                                <p class="small mb-2">
+                                    Group tours, meetups and chill hangouts that are safer for solo travelers.
+                                </p>
+                                <button class="btn btn-outline-warning btn-sm rounded-pill mt-auto">
+                                    Find a meetup
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- COMMUNITY SECTION -->
+                <section id="section-community" class="main-section">
+                    <h4 class="fw-bold mb-3">Community</h4>
+                    <p class="text-muted mb-4">
+                        You are not actually alone. Many others are traveling near you.
+                    </p>
+                    <div class="card border-0 shadow-sm p-3 mb-3">
+                        <div class="d-flex align-items-center gap-3 mb-2">
+                            <img src="https://ui-avatars.com/api/?name=Sam+P&background=0D8ABC&color=fff" alt="Sam" class="rounded-circle" style="width: 40px; height: 40px;" />
+                            <div>
+                                <strong>Sam P.</strong>
+                                <small class="d-block text-muted">Solo traveler nearby</small>
+                            </div>
+                        </div>
+                        <p class="small mb-2">
+                            “I get nervous at night, so I always join small group activities. It helps a lot.”
+                        </p>
+                        <button class="btn btn-outline-primary btn-sm rounded-pill">
+                            Show safe group options
+                        </button>
+                    </div>
+
+                    <div class="card border-0 shadow-sm p-3">
+                        <h6 class="fw-bold mb-1">Your Safety Circle</h6>
+                        <p class="small text-muted mb-2">
+                            Add trusted contacts who get alerts if you trigger SOS.
+                        </p>
+                        <div class="d-flex gap-2 flex-wrap small">
+                            <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill">
+                                Mom · Primary
+                            </span>
+                            <span class="badge bg-secondary-subtle text-secondary px-3 py-2 rounded-pill">
+                                Best Friend
+                            </span>
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill">
+                                + Add Contact
+                            </button>
+                        </div>
+                    </div>
+                </section>
+            </main>
+
+            <!-- CHAT PANEL -->
+            <aside class="col-md-3 col-lg-3 bg-white border-start d-flex flex-column h-100 p-0 shadow-lg chat-aside" id="chatAside">
+                <div class="p-3 border-bottom bg-light">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="ai-avatar pulse-green">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-0 fw-bold">Travel Companion</h6>
+                            <small class="text-success">● Online and watching out for you</small>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary small">
+                            BETA
+                        </span>
+                    </div>
+                </div>
+
+                <div class="chat-body flex-grow-1 p-3 overflow-auto" id="chatBox">
+                    <div class="message ai-message mb-3">
+                        <div class="msg-content p-3 rounded-3">
+                            I’m here with you. Enable live location to get safer and more personal guidance.
+                            <small class="d-block mt-2 text-muted msg-time">Now</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 border-top bg-light chat-footer">
+                    <div class="d-flex gap-2 mb-2 quick-actions">
+                        <button class="badge bg-secondary cursor-pointer border-0">
+                            <i class="fa-solid fa-language me-1"></i> Translate
+                        </button>
+                        <button class="badge bg-secondary cursor-pointer border-0">
+                            <i class="fa-solid fa-camera me-1"></i> Scan Menu
+                        </button>
+                    </div>
+                    <div class="input-group chat-input">
+                        <input type="text" class="form-control border-0 bg-white shadow-sm" placeholder="Tell me how you feel or ask anything" aria-label="Type your message" />
+                        <button class="btn btn-primary" type="button" aria-label="Send message">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <small class="d-block mt-2 text-muted text-center small">
+                        Try “I feel lonely”, “Is this area safe?”, or “Find food nearby”.
+                    </small>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <!-- App Logic -->
+    <script src="script.js"></script>
+</body>
+
+</html>
