@@ -1,22 +1,9 @@
-{
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Attach to Chrome",
-            "port": 9222,
-            "request": "attach",
-            "type": "chrome",
-            "webRoot": "${workspaceFolder}"
-        },
-        {
-            "type": "chrome",
-            "request": "launch",
-            "name": "Launch Chrome against localhost",
-            "url": "http://localhost:8080",
-            "webRoot": "${workspaceFolder}"
-        }
-    ]
-}
+I'm not sure what you mean by "auto". Could you provide more details about what you'd like to modify in your `launch.json` file?
+
+For example, are you looking to:
+- Add a new debug configuration?
+- Auto-detect the Chrome port?
+- Set up automatic startup?
+- Something else?
+
+Please clarify what changes you need.
